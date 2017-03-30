@@ -28,6 +28,13 @@ defmodule ApproximateHistogram.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:benchfella, "~> 0.3", only: :dev},
+      {:credo,      "~> 0.4", only: [:dev, :test]},
+      {:dialyxir,   "~> 0.4", only: [:dev], runtime: false},
+      {:propcheck,  "~> 0.0", only: [:dev, :test]},
+      {:dogma,      "~> 0.1", only: :dev},
+      {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
+    ]
   end
 end

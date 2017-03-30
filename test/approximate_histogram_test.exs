@@ -73,4 +73,66 @@ defmodule ApproximateHistogramTest do
       |> Histo.add(17) # Will hit capacity, then merge w/ the 16s.
       |> Histo.to_list
   end
+
+  test "asking for the 0th percentile returns the first bin's value" do
+    histo = Histo.new(5)
+      |> Histo.add(2)
+      |> Histo.add(2)
+      |> Histo.add(2)
+      |> Histo.add(6)
+      |> Histo.add(6)
+      |> Histo.add(3)
+      |> Histo.add(3)
+      |> Histo.add(4)
+      |> Histo.add(5)
+    assert [{value, _} | _] = Histo.to_list(histo)
+
+    assert ^value = Histo.percentile(histo, 0)
+  end
+
+  test "asking for the 100th percentile returns the last bin's value" do
+    histo = Histo.new(5)
+      |> Histo.add(2)
+      |> Histo.add(2)
+      |> Histo.add(2)
+      |> Histo.add(6)
+      |> Histo.add(6)
+      |> Histo.add(3)
+      |> Histo.add(3)
+      |> Histo.add(4)
+      |> Histo.add(5)
+    list = Histo.to_list(histo)
+    {value, _} = List.last(list)
+
+    assert ^value = Histo.percentile(histo, 100)
+  end
+
+  test "asking for the 50th percentile returns the middle value" do
+    histo = Histo.new(5)
+      |> Histo.add(1)
+      |> Histo.add(10)
+      |> Histo.add(2)
+      |> Histo.add(9)
+      |> Histo.add(5)
+      |> Histo.add(5)
+
+    assert 5.0 = Histo.percentile(histo, 50)
+  end
+
+  test "asking for the percentile of a value" do
+    histo = Histo.new(10)
+      |> Histo.add(1)
+      |> Histo.add(2)
+      |> Histo.add(3)
+      |> Histo.add(4)
+      |> Histo.add(5)
+      |> Histo.add(6)
+      |> Histo.add(7)
+      |> Histo.add(8)
+      |> Histo.add(9)
+      |> Histo.add(10)
+
+    assert 50.0 = Histo.percentile_for_value(histo, 5)
+    assert 20.0 = Histo.percentile_for_value(histo, 2)
+  end
 end

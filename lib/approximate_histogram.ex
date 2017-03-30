@@ -58,16 +58,18 @@ defmodule ApproximateHistogram do
       #   [before] [closest, new] [after]   <-- value is bigger than the closest
       #   [before] [new, closest] [after]   <-- value is smaller than the closest
       #   [before] [new] [after]            <-- First element and identical value cases
-      {bef, closest, aft} = split(histo.bins, value)
+      float_value = value / 1
+      {bef, closest, aft} = split(histo.bins, float_value)
+
       middle = cond do
         closest == nil ->
-          [{value, 1}]
-        bin_value(closest) == value ->
-          [{value, bin_count(closest) + 1}]
-        bin_value(closest) < value ->
-          [closest, {value, 1}]
-        bin_value(closest) > value ->
-          [{value, 1}, closest]
+          [{float_value, 1}]
+        bin_value(closest) == float_value ->
+          [{float_value, bin_count(closest) + 1}]
+        bin_value(closest) < float_value ->
+          [closest, {float_value, 1}]
+        bin_value(closest) > float_value ->
+          [{float_value, 1}, closest]
       end
 
       new_bins = bef ++ middle ++ aft
@@ -75,9 +77,60 @@ defmodule ApproximateHistogram do
     end
   end
 
+  def bin_value({value, _}), do: value
+
+  def bin_count({_, count}), do: count
+
+  def bins_used(%__MODULE__{} = histo) do
+    Enum.count(histo.bins)
+  end
+
+  @spec to_list(t) :: list(bin)
+  def to_list(%__MODULE__{} = histo) do
+    histo.bins
+  end
+
+  def percentile(%__MODULE__{} = histo, percentile) do
+    target = size(histo) * (percentile / 100)
+    Enum.reduce_while(
+      histo.bins,
+      target,
+      fn {value, count}, remaining ->
+        next = remaining - count
+        if next <= 0 do
+          {:halt, value}
+        else
+          {:cont, next}
+        end
+      end
+    )
+  end
+
+  # Figure out which percentile this value would slot into
+  def percentile_for_value(%__MODULE__{} = histo, target) do
+    found_at = Enum.reduce_while(
+      histo.bins,
+      0,
+      fn {bin_val, bin_count}, count ->
+        if bin_val > target do
+          {:halt, count}
+        else
+          {:cont, count + bin_count}
+        end
+      end
+    )
+
+    found_at / size(histo) * 100
+  end
+
+  @spec at_capacity?(t) :: boolean()
+  defp at_capacity?(%__MODULE__{} = histo) do
+    histo.options.max_bins == Enum.count(histo.bins)
+  end
+
   # returns three-tuple: {[before], closest, [after]}
   # before and after may be empty lists
-  def split(bins, value) do
+  defp split(bins, value) do
     {bef, aft} = Enum.split_while(bins, fn {bin_val, _} -> value > bin_val end)
 
     bef_closest = List.last(bef)
@@ -106,21 +159,4 @@ defmodule ApproximateHistogram do
     end
   end
 
-  def bin_value({value, _}), do: value
-
-  def bin_count({_, count}), do: count
-
-  def bins_used(%__MODULE__{} = histo) do
-    Enum.count(histo.bins)
-  end
-
-  @spec to_list(t) :: list(bin)
-  def to_list(%__MODULE__{} = histo) do
-    histo.bins
-  end
-
-  @spec at_capacity?(t) :: boolean()
-  defp at_capacity?(%__MODULE__{} = histo) do
-    histo.options.max_bins == Enum.count(histo.bins)
-  end
 end
