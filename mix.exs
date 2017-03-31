@@ -7,6 +7,8 @@ defmodule ApproximateHistogram.Mixfile do
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: "Approximate Histograms",
+     package: package(),
      deps: deps()]
   end
 
