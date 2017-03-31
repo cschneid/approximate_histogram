@@ -1,11 +1,9 @@
 # ApproximateHistogram
 
-**TODO: Add description**
+An implementation of "Streaming Approximate Histograms" - based on a Go
+implementation by VividCortex (https://github.com/VividCortex/gohistogram)
 
 ## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `approximate_histogram` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -13,7 +11,22 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/approximate_histogram](https://hexdocs.pm/approximate_histogram).
+## Usage
+
+```elixir
+histo = ApproximateHistogram.new(50) # Optional max-size argument. Defaults to 50 bins.
+
+filled_histo =
+  histo |> ApproximateHistogram.add(10) |> ApproximateHistogram.add(20) |> ApproximateHistogram.add(15)
+
+# A list of two-tuples, each having a value, and a count for that value.
+# The length will never exceed the max-size argument.
+list = ApproximateHistogram.to_list(filled_histo) # => [{10, 1}, {15, 1}, {20, 1}]
+
+# What is the value for the 50th percentile?
+ApproximateHistogram.percentile(filled_histo, 50) # => 15.0
+
+# What is the percentile for the value 18?
+ApproximateHistogram.percentile_for_value(filled_histo, 18) # => 66.66
+```
 

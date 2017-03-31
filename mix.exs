@@ -10,23 +10,10 @@ defmodule ApproximateHistogram.Mixfile do
      deps: deps()]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
-    # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: [:logger]]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:my_dep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:my_dep, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
     [
       {:benchfella, "~> 0.3", only: :dev},
@@ -36,5 +23,15 @@ defmodule ApproximateHistogram.Mixfile do
       {:dogma,      "~> 0.1", only: :dev},
       {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
     ]
+  end
+
+  defp package do
+    [
+     name: :approximate_histogram,
+     files: ["lib", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+     maintainers: ["Chris Schneider"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/cschneid/approximate_histogram",
+              "Docs" => "https://github.com/cschneid/approximate_histogram"}]
   end
 end
