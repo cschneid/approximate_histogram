@@ -24,6 +24,7 @@ defmodule ApproximateHistogram.Mixfile do
       {:propcheck,  "~> 0.0", only: [:dev, :test]},
       {:dogma,      "~> 0.1", only: :dev},
       {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev},
     ]
   end
 
