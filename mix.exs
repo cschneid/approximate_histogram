@@ -30,7 +30,7 @@ defmodule ApproximateHistogram.Mixfile do
   defp package do
     [
      name: :approximate_histogram,
-     files: ["lib", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+     files: ["lib", "mix.exs", "README*", "LICENSE*"],
      maintainers: ["Chris Schneider"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/cschneid/approximate_histogram",
