@@ -1,5 +1,6 @@
 defmodule ApproximateHistogramTest do
   use ExUnit.Case, async: true
+  use PropCheck
   alias ApproximateHistogram, as: Histo
   doctest ApproximateHistogram
 
@@ -134,5 +135,56 @@ defmodule ApproximateHistogramTest do
 
     assert 50.0 = Histo.percentile_for_value(histo, 5)
     assert 20.0 = Histo.percentile_for_value(histo, 2)
+  end
+
+  property "no matter how many adds, never go above bucket size" do
+    forall {max, xs} in {pos_integer(), list(float())} do
+      histo = Enum.reduce(xs, Histo.new(max), fn x, h -> Histo.add(h, x) end)
+      Histo.bins_used(histo) <= max
+    end
+  end
+
+  property "the size should exactly match how many items were inserted" do
+    forall {max, xs} in {pos_integer(), list(float())} do
+      histo = Enum.reduce(xs, Histo.new(max), fn x, h -> Histo.add(h, x) end)
+      Histo.size(histo) == Enum.count(xs)
+    end
+  end
+
+  property "the to_list results should always be in order" do
+    forall {max, xs} in {pos_integer(), list(float())} do
+      histo = Enum.reduce(xs, Histo.new(max), fn x, h -> Histo.add(h, x) end)
+      {values, _counts} = Enum.unzip(Histo.to_list(histo))
+      Enum.sort(values) == values
+    end
+  end
+
+  property "the to_list results should never have a duplicate value" do
+    forall {max, xs} in {pos_integer(), list(float())} do
+      histo = Enum.reduce(xs, Histo.new(max), fn x, h -> Histo.add(h, x) end)
+      {values, _counts} = Enum.unzip(Histo.to_list(histo))
+      Enum.uniq(values) == values
+    end
+  end
+
+  property "percentiles should never be outside the range of values added" do
+    forall {percentile, max, xs} 
+           in {integer(0,100), pos_integer(), non_empty(list(float()))} do
+      histo = Enum.reduce(xs, Histo.new(max), fn x, h -> Histo.add(h, x) end)
+      {min, max} = Enum.min_max(xs)
+
+      val = Histo.percentile(histo, percentile) 
+
+      val >= min && val <= max
+    end
+  end
+
+  property "percentile_for_value should return a percentile between 0 & 100" do
+    forall {target, max, xs} 
+           in {float(), pos_integer(), list(float())} do
+      histo = Enum.reduce(xs, Histo.new(max), fn x, h -> Histo.add(h, x) end)
+      val = Histo.percentile_for_value(histo, target) 
+      val >= 0 && val <= 100
+    end
   end
 end

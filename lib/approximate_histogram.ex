@@ -120,7 +120,13 @@ defmodule ApproximateHistogram do
       end
     )
 
-    found_at / size(histo) * 100
+    # Protect against div by 0
+    s = size(histo)
+    if s == 0 do
+      0
+    else
+      found_at / size(histo) * 100
+    end
   end
 
   @spec at_capacity?(t) :: boolean()
